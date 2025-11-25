@@ -1,0 +1,31 @@
+
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+dependencies {
+    implementation 'net.oc_soft:lib-io'
+    testImplementation platform('org.junit:junit-bom:6.0.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+
+    def logConfig = file 'conf/logging.properties'
+    systemProperties.'java.util.logging.config.file' = "${logConfig}"
+}
+
+
+// vi: se ts=4 sw=4 et:
