@@ -93,12 +93,10 @@ public class ChunkedBody {
                                 }
                             }
                             if (doProcess) {
-                                for (var idx = 0; idx < byteCopyCount; idx++) {
-                                    var aByte = sourceInputStream.read();
-                                    doProcess = aByte != -1;
-                                    if (!doProcess) {
-                                        break;
-                                    }
+                                if (byteCopyCount > 0) {
+                                    var readSize = sourceInputStream.read(
+                                        copyBuffer, 0, byteCopyCount);
+                                    doProcess = readSize == byteCopyCount;
                                 }
                             }
                             if (doProcess) {

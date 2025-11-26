@@ -14,10 +14,13 @@ public class Response {
      * create response object from http response stream
      * @param stream contains http response
      * @param memoryBodySize threshould about body contents into file.
+     * @param copybufferSize buffer size for memory copy
      * @return response object
      */
     public static Response read(
-        InputStream stream, int memoryBodySize) {
+        InputStream stream,
+        int memoryBodySize,
+        int copyBufferSize) {
         var sourceStream = stream;
         if (!stream.markSupported()) {
             sourceStream = new BufferedInputStream(stream, 0xf);
@@ -43,13 +46,14 @@ public class Response {
                 doProcess = false;
             }
         }
-        Body body = null;
+        MessageBody messageBody = null;
         if (doProcess) {
-            body = Body.read(sourceStream, memoryBodySize);
+            messageBody = MessageBody.read(sourceStream, headers,
+                memoryBodySize, copyBufferSize);
         } 
         Response result = null;
         if (doProcess) {
-            result = new Response(statusLine, headers, body);
+            result = new Response(statusLine, headers, messageBody);
         }
         return result;
     } 
@@ -68,7 +72,7 @@ public class Response {
     /**
      * response body 
      */
-    private Body body;
+    private MessageBody messageBody;
 
     /**
      * construct response
@@ -78,10 +82,10 @@ public class Response {
      */
     Response(StatusLine statusLine,
         Headers headers,
-        Body body) {
+        MessageBody body) {
         this.statusLine = statusLine;
         this.headers = headers;
-        this.body = body;
+        this.messageBody = messageBody;
     }
     
     /**
@@ -99,8 +103,8 @@ public class Response {
     /**
      * response body 
      */
-    public Body getBody() {
-       return body;
+    public MessageBody getMessageBody() {
+       return messageBody;
     }
 }
 
