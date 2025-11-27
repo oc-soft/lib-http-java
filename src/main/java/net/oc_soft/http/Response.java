@@ -82,7 +82,7 @@ public class Response {
      */
     Response(StatusLine statusLine,
         Headers headers,
-        MessageBody body) {
+        MessageBody messageBody) {
         this.statusLine = statusLine;
         this.headers = headers;
         this.messageBody = messageBody;

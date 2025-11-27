@@ -2,6 +2,8 @@ package net.oc_soft.http;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;

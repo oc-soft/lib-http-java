@@ -43,30 +43,24 @@ public class Body {
         int bodySize,
         int memoryBodySize) {
         Body result = null;
-        var memoryBody = new byte[Math.min(memoryBodySize, bodySize)];
+        var bodyBuffer = new byte[Math.min(memoryBodySize, bodySize)];
         try (var sourceStream = new BufferedInputStream(stream,
-                memoryBodySize + 1)) {
+                bodyBuffer.length + 1)) {
             var doProcess = true;
-            sourceStream.mark(memoryBodySize + 1);
-            int readSize = sourceStream.read(memoryBody);
+            sourceStream.mark(bodyBuffer.length + 1);
+            int readSize = sourceStream.read(bodyBuffer);
             if (0 <= readSize) {
                 var useMemoryBody = true;
-                if (readSize == memoryBody.length) {
-                    doProcess = memoryBodySize <= bodySize;
-                    if (doProcess) {
-                        var aByte = sourceStream.read();
-                        useMemoryBody = aByte == -1; 
-                    }
+                if (readSize == bodyBuffer.length) {
+                    var aByte = sourceStream.read();
+                    useMemoryBody = aByte == -1; 
                 } else { 
-                    doProcess = readSize <= bodySize;
-                    if (doProcess) {
-                        memoryBody = Arrays.copyOf(memoryBody, readSize);
-                    }
+                    bodyBuffer = Arrays.copyOf(bodyBuffer, readSize);
                 }
                 if (doProcess) {
                     Contents contents = null;
                     if (useMemoryBody) {
-                        contents = new BodyByteArrayContents(memoryBody);
+                        contents = new BodyByteArrayContents(bodyBuffer);
                     } else {
                         sourceStream.reset();
                         contents = BodyFileContents.create(sourceStream);
