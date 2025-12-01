@@ -26,24 +26,34 @@ public class MessageBody {
             "Transfer-Encoding");
 
         MessageBody result = null;
-        if (containsContentLength) {
-            if (!containsTransferEnconding) {
-                var contentLength = headers.getContentLength();
-                if (contentLength != null) {
-                     var body = Body.read(stream,
-                        contentLength, memoryBodySize);
-                     if (body != null) {
-                         result = new MessageBody(body);
-                     }
-                }
-            }
-        } else if (containsTransferEnconding) {
-            if (!containsContentLength) {
+        if (containsTransferEnconding) {
+            if (TransferEncoding.endsWithChunked(headers)) {
                 var chunkedBody = ChunkedBody.read(
                     stream, memoryBodySize, copyBufferSize); 
                 if (chunkedBody != null) {
                     result = new MessageBody(chunkedBody);
                 }
+            } else {
+                var body = Body.readToEnd(
+                    stream, memoryBodySize, copyBufferSize);
+                if (body != null) {
+                    result = new MessageBody(body);
+                }
+            }
+        } else if (containsContentLength) {
+            var contentLength = headers.getContentLength();
+            if (contentLength != null) {
+                 var body = Body.read(stream,
+                    contentLength, memoryBodySize);
+                 if (body != null) {
+                     result = new MessageBody(body);
+                 }
+            }
+        } else {
+            var body = Body.readToEnd(
+                stream, memoryBodySize, copyBufferSize);
+            if (body != null) {
+                result = new MessageBody(body);
             }
         }
         return result;
@@ -69,6 +79,17 @@ public class MessageBody {
         this.body = body;
     }
      
+    /**
+     * release resource
+     */
+    public synchronized void close() {
+        if (body instanceof Body) {
+            ((Body)body).close();
+        } else if (body instanceof ChunkedBody) {
+            ((ChunkedBody)body).close();
+        }
+        body = null;
+    }
 
     /**
      * You get true if body is not chunked body.

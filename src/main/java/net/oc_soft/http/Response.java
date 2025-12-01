@@ -87,6 +87,16 @@ public class Response {
         this.headers = headers;
         this.messageBody = messageBody;
     }
+
+    /**
+     * release resource
+     */
+    public synchronized void close() {
+        if (messageBody != null) {
+            messageBody.close();
+            messageBody = null;
+        }
+    }
     
     /**
      * status line

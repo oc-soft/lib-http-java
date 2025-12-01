@@ -53,6 +53,7 @@ public class ChunkedBody {
                 ex);
             doProcess = false;
         }
+        
         if (doProcess) {
             var copyBuffer = new byte[copyBufferSize];
             var memFileStream = new MemFileOutputStream(
@@ -115,11 +116,13 @@ public class ChunkedBody {
                         }
                     }
                 }
-                if (doProcess) {
+                if (doProcess && memFileStream.getSize() > 0) {
                     Body.Contents bodyContents = null;
                     if (memFileStream.isSavedIntoPath()) {
                         bodyContents = new BodyFileContents(
-                            memFileStream.getOutputPath());
+                            memFileStream.getOutputPath(),
+                            true);
+                        path = null;
                     } else {
                         bodyContents = new BodyByteArrayContents(
                             memFileStream.getMemoryData());
@@ -140,17 +143,19 @@ public class ChunkedBody {
                 getLogger().log(java.util.logging.Level.SEVERE,
                     "can not load chunked body because of exception",
                     ex);
+            } finally {
+                if (path != null) {
+                    path.toFile().delete();
+                    path = null;
+                }
             }
             if (doProcess) {
                 result = new ChunkedBody(chunkSizeLineSizes,
                     messageBody, trailerFields);
             }
-            if (!doProcess) {
-                if (path != null) {
-                    path.toFile().delete();
-                }
-            }
-
+        }
+        if (path != null) {
+            path.toFile().delete();
         }
         return result;
     }
@@ -183,6 +188,20 @@ public class ChunkedBody {
         this.messageBody = messageBody;
         this.trailerFields = trailerFields;
     }
+
+
+    /**
+     * release system resource
+     */
+    public synchronized void close() {
+        if (messageBody != null) {
+            messageBody.close();
+            messageBody = null;
+        }
+        chunkSizeLines = null;
+        trailerFields = null;
+    }
+
     /**
      * get chunk line size list
      */

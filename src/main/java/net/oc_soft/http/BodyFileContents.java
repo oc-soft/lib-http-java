@@ -36,7 +36,6 @@ public class BodyFileContents implements Body.Contents {
     static Path createTempFile()
         throws IOException {
         return File.createTempFile("htb", null).toPath();
-
     }
 
     /**
@@ -47,7 +46,7 @@ public class BodyFileContents implements Body.Contents {
         try (var outStream = Files.newOutputStream(path)) {
             stream.transferTo(outStream);
         }
-        return new BodyFileContents(path);
+        return new BodyFileContents(path, true);
     } 
 
 
@@ -55,6 +54,11 @@ public class BodyFileContents implements Body.Contents {
      * path which contains http body contents.
      */
     private Path path;
+
+    /**
+     * delete path if this field true
+     */
+    private boolean deletePathOnClose;
     
     /**
      * clean resource 
@@ -65,12 +69,16 @@ public class BodyFileContents implements Body.Contents {
      * consturct body contents which are saved into path.
      * @param path It keep body contents
      */
-    BodyFileContents(Path path) {
+    BodyFileContents(Path path, boolean deletePath) {
         this.path = path;
-        final var pathRef = path;
-        resourceCleaner = getClenaer().register(this, ()-> { 
-            pathRef.toFile().delete();
-        }); 
+        this.deletePathOnClose = deletePath;
+        
+        if (deletePath) {
+            final var pathRef = path;
+            resourceCleaner = getClenaer().register(this, ()-> { 
+                pathRef.toFile().delete();
+            }); 
+        }
     }
 
 

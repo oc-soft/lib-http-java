@@ -43,6 +43,27 @@ public class BodyTest1 {
             assert body.getContents() == null;
         }
     }
+
+
+    @Test
+    void readToEnd1() throws IOException {
+        var messageStr =
+            """
+            This is first line.
+            This is second line.
+            """;
+        var messageBytes = messageStr.getBytes(StandardCharsets.UTF_16);
+        try (var inputStream = new ByteArrayInputStream(messageBytes)) {
+            var body = Body.readToEnd(inputStream,
+                128, 10);
+            try (var contentsStream = body.getInputStream()) {
+                var contents = contentsStream.readAllBytes();
+                var contentsStr = new String(contents, StandardCharsets.UTF_16);
+                assert messageStr.equals(contentsStr);
+            }
+            body.close();
+        }
+    }
 }
 
 // vi: se ts=4 sw=4 et:
