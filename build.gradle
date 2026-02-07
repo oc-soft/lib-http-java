@@ -27,5 +27,28 @@ test {
     systemProperties.'java.util.logging.config.file' = "${logConfig}"
 }
 
+task jettyModule(type: Copy) {
+    description = 'copy jetty module'
+    dependsOn jar
+
+    def outputDir = file("build/jetty") 
+    destinationDir = outputDir
+    def jarOut = jar.archiveFile
+
+    from (jarOut) {
+        into 'lib'
+    }
+}
+
+task processJettyMod(type: Copy) {
+    description = 'process jetty module file' 
+    dependsOn jettyModule
+
+    def srcMod = file("src/main/jetty/modules/${project.name}.mod")
+    def outputDir = file("build/jetty/modules") 
+    destinationDir = outputDir
+ 
+    from (srcMod) 
+}
 
 // vi: se ts=4 sw=4 et:
