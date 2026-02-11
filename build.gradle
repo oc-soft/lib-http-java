@@ -51,4 +51,18 @@ task processJettyMod(type: Copy) {
     from (srcMod) 
 }
 
+task prepareCatalinaBaseLib(type: Copy) {
+    description = 'prepare catalina base library'
+    dependsOn jar
+
+    destinationDir = file('build/jetty-base')
+
+    def jarOut = jar.archiveFile
+
+    from (jarOut) {
+        into 'lib'
+    }
+}
+
+
 // vi: se ts=4 sw=4 et:
